@@ -155,6 +155,18 @@ img,svg{-webkit-user-drag:none}
 .cristal{background:rgba(8,52,40,.62);-webkit-backdrop-filter:none;backdrop-filter:none}
 .flota{filter:none}
 .caneca{will-change:transform}
+.obj img{transform-origin:50% 50%}
+.stain{position:absolute;left:24%;top:34%;width:52%;height:42%;border-radius:50%;background:radial-gradient(ellipse,rgba(20,12,5,.85),rgba(20,12,5,.35) 55%,transparent 75%);pointer-events:none}
+.etiqueta{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%) rotate(-6deg);background:#e53935;color:#fff;font-family:"Baloo 2",Arial,sans-serif;font-weight:800;font-size:calc(var(--tam)*.15);line-height:1;padding:3px 9px;border-radius:7px;border:2px solid #fff;box-shadow:0 3px 6px rgba(0,0,0,.4);pointer-events:none;white-space:nowrap}
+
+.caneca{width:min(17vw,28vh);bottom:2vh}
+.piso{height:16vh}
+.cinta{bottom:16vh}
+.mancha{bottom:3vh;height:8vh}
+.ventana{width:12vw;height:18vh}
+#aviso{bottom:1.5vh;width:min(34vw,460px);font-size:clamp(.8rem,1.4vw,1rem);padding:8px 14px;pointer-events:none}
+#cuenta{background:none;pointer-events:none;text-shadow:0 8px 0 #b36b00,0 0 40px rgba(0,0,0,.45),0 0 60px rgba(255,224,102,.7)}
+.vineta{background:radial-gradient(ellipse at 50% 45%,transparent 62%,rgba(0,0,0,.3))}
 </style>
 </head>
 <body>
@@ -233,6 +245,7 @@ const VIDAS = 3, PUNTOS_ACIERTO = 10, CARPETA_IMAGENES = "imagenes/"; let TAM = 
 
 /* ===== Dibujos de los residuos (viewBox 100x100) ===== */
 const ART = {
+pastillas:`<g transform="rotate(-30 50 50)"><rect x="12" y="38" width="76" height="24" rx="12" fill="#fff" stroke="#9aa3aa" stroke-width="2"/><path d="M50 38h26a12 12 0 0 1 0 24H50z" fill="#e53935"/><path d="M20 42h40" stroke="#fff" stroke-opacity=".8" stroke-width="3" stroke-linecap="round"/></g><circle cx="28" cy="76" r="10" fill="#ffd54f" stroke="#b8860b" stroke-width="2"/><circle cx="74" cy="24" r="9" fill="#4fc3f7" stroke="#0277bd" stroke-width="2"/>`,
 bateria:`<rect x="8" y="34" width="84" height="52" rx="7" fill="url(#gDark)"/><rect x="8" y="34" width="84" height="11" rx="6" fill="#56616c"/><rect x="21" y="23" width="13" height="13" rx="2" fill="url(#gGold)"/><rect x="66" y="23" width="13" height="13" rx="2" fill="url(#gGold)"/><rect x="18" y="52" width="64" height="24" rx="3" fill="#ffd23f"/><text x="50" y="70" font-size="16" font-weight="800" text-anchor="middle" fill="#222" font-family="Arial">12V + −</text><path d="M12 40h10" stroke="#fff" stroke-opacity=".3" stroke-width="3"/>`,
 aceite:`<rect x="20" y="34" width="54" height="56" rx="9" fill="url(#gDark)"/><rect x="26" y="16" width="22" height="22" rx="3" fill="url(#gDark)"/><rect x="28" y="8" width="18" height="10" rx="2" fill="#ffc933"/><path d="M74 44h8a6 6 0 0 1 6 6v22a6 6 0 0 1-6 6h-8" fill="none" stroke="#2a2f35" stroke-width="7"/><rect x="26" y="52" width="42" height="26" rx="3" fill="#f2e6c9"/><path d="M47 55c5 7 9 10 9 15a9 9 0 0 1-18 0c0-5 4-8 9-15z" fill="#a85b00"/><path d="M26 40h6" stroke="#fff" stroke-opacity=".3" stroke-width="3"/>`,
 jeringa:`<g transform="rotate(-35 50 50)"><rect x="2" y="49.2" width="22" height="1.8" fill="#b6bec6"/><rect x="22" y="45" width="8" height="10" rx="2" fill="#3d8fe0"/><rect x="30" y="42" width="44" height="16" rx="3" fill="rgba(205,232,255,.6)" stroke="#6f8ea4" stroke-width="1.5"/><rect x="31" y="43.5" width="28" height="13" fill="rgba(220,40,40,.65)"/><path d="M38 42v5M46 42v5M54 42v5M62 42v5M70 42v5" stroke="#44606f" stroke-width="1"/><rect x="74" y="48" width="16" height="4" fill="#dfe5ea"/><rect x="88" y="41" width="4" height="18" rx="1" fill="#c9d1d8"/><rect x="72" y="37" width="3" height="26" rx="1" fill="#c9d1d8"/></g>`,
@@ -250,20 +263,21 @@ lata:`<rect x="26" y="22" width="48" height="64" rx="5" fill="url(#gMetal)"/><el
 };
 
 const OBJETOS = [
- {id:"bateria",nombre:"Batería usada",peligroso:true,dato:"Contiene plomo y ácido sulfúrico: contamina agua y suelo."},
- {id:"aceite",nombre:"Aceite usado",peligroso:true,dato:"Nunca al desagüe: contamina las fuentes de agua."},
- {id:"jeringa",nombre:"Jeringa",peligroso:true,dato:"Residuo hospitalario: puede transmitir enfermedades."},
- {id:"bombilla",nombre:"Bombilla fluorescente",peligroso:true,dato:"Puede contener mercurio, una sustancia tóxica."},
- {id:"pintura",nombre:"Envase de pintura",peligroso:true,dato:"Pinturas y solventes son inflamables y tóxicos."},
- {id:"plaguicida",nombre:"Plaguicida",peligroso:true,dato:"Es tóxico para personas, animales y ecosistemas."},
- {id:"trapo",nombre:"Trapo con aceite",peligroso:true,dato:"Impregnado de aceite: es inflamable y contaminante."},
- {id:"papel",nombre:"Papel",peligroso:false,dato:"Se puede aprovechar y reciclar."},
- {id:"carton",nombre:"Cartón",peligroso:false,dato:"Aprovechable: se recicla para hacer nuevos productos."},
- {id:"botella-plastico",nombre:"Botella de plástico limpia",peligroso:false,dato:"Limpia y seca, se puede reciclar."},
- {id:"cascara",nombre:"Cáscara de banano",peligroso:false,dato:"Residuo orgánico: se aprovecha como abono."},
- {id:"botella-vidrio",nombre:"Botella de vidrio",peligroso:false,dato:"Vidrio no contaminado: se puede reciclar."},
- {id:"hojas",nombre:"Hojas de jardín",peligroso:false,dato:"Residuo de jardinería: se aprovecha en compostaje."},
- {id:"lata",nombre:"Lata vacía",peligroso:false,dato:"Aprovechable: el metal se recicla."}
+ {id:"jeringa",nombre:"Jeringa",peligroso:true,dato:"Residuo hospitalario: puede transmitir enfermedades.",e:1.1,url:"https://png.pngtree.com/png-clipart/20240804/original/pngtree-a-syringe-with-needle-on-white-background-png-image_15701719.png"},
+ {id:"aceite",nombre:"Barril de aceite usado",peligroso:true,dato:"Nunca al desagüe: contamina las fuentes de agua.",e:1,url:"https://png.pngtree.com/png-vector/20250213/ourmid/pngtree-old-rusty-steel-oil-barrel-isolated-on-transparent-background-png-image_15463938.png"},
+ {id:"pastillas",nombre:"Pastillas vencidas",peligroso:true,tag:"VENCIDAS",dato:"Los medicamentos vencidos contaminan el agua y el suelo: se entregan en puntos de recolección.",e:1,url:"https://static.vecteezy.com/system/resources/previews/021/973/043/original/pills-3d-render-icon-illustration-with-transparent-background-health-and-medical-png.png"},
+ {id:"trapo",nombre:"Trapo sucio de aceite",peligroso:true,mancha:true,dato:"Impregnado de aceite: es inflamable y contaminante.",e:1.05,url:"https://www.pngall.com/wp-content/uploads/5/Cleaning-Rag-PNG-Download-Image.png"},
+ {id:"bombilla",nombre:"Bombilla",peligroso:true,dato:"Puede contener mercurio, una sustancia tóxica.",e:1,url:"https://png.pngtree.com/png-clipart/20240321/original/pngtree-electric-light-bulb-ai-generated-png-image_14639729.png"},
+ {id:"pintura",nombre:"Paleta de pintura",peligroso:true,dato:"Pinturas y solventes son inflamables y tóxicos.",e:1.05,url:"https://definicion.de/wp-content/uploads/2013/05/paleta.png"},
+ {id:"bateria",nombre:"Batería usada",peligroso:true,dato:"Contiene plomo y ácido sulfúrico: contamina agua y suelo.",e:1,url:"https://png.pngtree.com/png-clipart/20231005/original/pngtree-green-batteries-battery-photo-png-image_13274779.png"},
+ {id:"plaguicida",nombre:"Veneno",peligroso:true,dato:"Es tóxico para personas, animales y ecosistemas.",e:1,url:"https://pngimg.com/uploads/poison/poison_PNG23.png"},
+ {id:"papel",nombre:"Papel",peligroso:false,dato:"Se puede aprovechar y reciclar.",e:1.05,url:"https://png.pngtree.com/png-vector/20230915/ourmid/pngtree-sheet-of-paper-png-png-image_10084761.png"},
+ {id:"hojas",nombre:"Hojas de jardín",peligroso:false,dato:"Residuo de jardinería: se aprovecha en compostaje.",e:1,url:"https://static.vecteezy.com/system/resources/previews/029/285/019/large_2x/leaves-transparent-background-leaves-transparent-background-ai-generative-free-png.png"},
+ {id:"botella-plastico",nombre:"Botella de plástico",peligroso:false,dato:"Limpia y seca, se puede reciclar.",e:1.1,url:"https://static.vecteezy.com/system/resources/thumbnails/042/167/903/small_2x/ai-generated-water-bottle-on-transparent-background-ai-generated-free-png.png"},
+ {id:"botella-vidrio",nombre:"Botella de vidrio",peligroso:false,dato:"Vidrio no contaminado: se puede reciclar.",e:1.1,url:"https://png.pngtree.com/png-clipart/20250227/original/pngtree-transparent-and-simple-glass-bottle-with-cap-png-image_20523915.png"},
+ {id:"carton",nombre:"Cartón",peligroso:false,dato:"Aprovechable: se recicla para hacer nuevos productos.",e:1,url:"https://static.vecteezy.com/system/resources/previews/044/813/539/original/carton-box-isolated-on-transparent-background-free-png.png"},
+ {id:"lata",nombre:"Lata vacía",peligroso:false,dato:"Aprovechable: el metal se recicla.",e:1.1,url:"https://static.vecteezy.com/system/resources/previews/044/813/159/non_2x/blank-slim-aluminum-can-isolated-on-transparent-background-free-png.png"},
+ {id:"cascara",nombre:"Cáscara de banano",peligroso:false,dato:"Residuo orgánico: se aprovecha como abono.",e:1,url:"https://www.seekpng.com/png/full/153-1532114_banana-png.png"}
 ];
 
 /* ===== Canecas ===== */
@@ -328,6 +342,7 @@ const mostrar=p=>{for(const k in pantallas)pantallas[k].classList.toggle("oculta
 $("c-blanca").innerHTML=binSVG(false);$("c-roja").innerHTML=binSVG(true);$("hb1").innerHTML=binSVG(false);$("hb2").innerHTML=binSVG(true);$("b-fs2").innerHTML=ICO.pantalla;
 let jugadores=[],turno=0,puntos=0,vidas=0,racha=0,rachaMax=0,aciertos=0,errores=0,perdidos=0,objetos=[],jugando=false,ultimo=0,tiempo=0,hastaSpawn=0,bolsa=[],puntosVistos=0;
 
+const SUELO=.92;
 let VW=innerWidth,VH=innerHeight,binRects=[];
 function cacheBins(){binRects=bins.map(b=>b.el.getBoundingClientRect())}
 function ajustar(){VW=innerWidth;VH=innerHeight;requestAnimationFrame(cacheBins);TAM=Math.round(Math.min(140,Math.max(80,innerHeight*.15)));document.documentElement.style.setProperty("--tam",TAM+"px")}
@@ -338,6 +353,7 @@ function pantallaCompleta(){if(!document.fullscreenElement)document.documentElem
 const enCampo=e=>{const t=e.target.nodeType===1?e.target:e.target.parentElement;return !(t&&t.closest&&t.closest("input"))};
 ["selectstart","dragstart","contextmenu"].forEach(ev=>document.addEventListener(ev,e=>{if(enCampo(e))e.preventDefault()}));
 
+OBJETOS.forEach(precargar);
 /* ambiente */
 for(let i=0;i<14;i++){const m=document.createElement("i");m.className="mota";m.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*85}%;--d:${8+Math.random()*10}s;--s:${2+Math.random()*4}px;animation-delay:-${Math.random()*10}s`;$("polvo").appendChild(m)}
 OBJETOS.forEach((o,i)=>{const f=document.createElement("div");f.className="flota";f.style.cssText=`left:${(i*7.1+2)%94}%;--d:${16+Math.random()*14}s;--w:${50+Math.random()*60}px;animation-delay:-${Math.random()*25}s`;f.innerHTML=`<svg viewBox="0 0 100 100">${ART[o.id]}</svg>`;$("p-inicio").prepend(f)});
@@ -355,9 +371,17 @@ const aplastar=el=>el.animate([{transform:"scale(1)"},{transform:"scale(1.14,.88
 
 const mult=()=>1+Math.min(2,Math.floor(racha/3));
 const siguiente=()=>{if(!bolsa.length)bolsa=OBJETOS.slice().sort(()=>Math.random()-.5);return bolsa.pop()};
-function sombraPos(o){if(!o.sh)return;const k=Math.max(0,Math.min(1,(o.y+TAM)/(VH*.88))),w0=TAM*1.2,sx=(.5+.7*k)*TAM/w0;o.sh.style.opacity=(.12+.5*k).toFixed(2);o.sh.style.transform=`translate(${o.x+(o.drag?0:o.sw)+TAM/2-w0/2+TAM*.18*k}px,${VH*.88-6}px) scaleX(${sx.toFixed(3)})`}
+function sombraPos(o){if(!o.sh)return;const k=Math.max(0,Math.min(1,(o.y+TAM)/(VH*SUELO))),w0=TAM*1.2,sx=(.5+.7*k)*TAM/w0;o.sh.style.opacity=(.12+.5*k).toFixed(2);o.sh.style.transform=`translate(${o.x+(o.drag?0:o.sw)+TAM/2-w0/2+TAM*.18*k}px,${VH*SUELO-6}px) scaleX(${sx.toFixed(3)})`}
 function pos(o){o.el.style.transform=o.drag?`translate(${o.x}px,${o.y}px) scale(1.15) rotate(-5deg)`:`translate(${o.x+o.sw}px,${o.y}px) rotate(${o.rot}deg)`;sombraPos(o)}
-function crearEl(def){const d=document.createElement("div");d.className="obj";d.title=def.nombre;d.innerHTML=`<svg viewBox="0 0 100 100">${ART[def.id]}</svg>`;const img=new Image();img.alt=def.nombre;img.draggable=false;img.onload=()=>{d.innerHTML="";d.appendChild(img)};img.src=CARPETA_IMAGENES+def.id+".png";return d}
+function precargar(def){const f=[def.url,CARPETA_IMAGENES+def.id+".png"].filter(Boolean);let i=0;(function probar(){if(i>=f.length)return;const im=new Image();im.referrerPolicy="no-referrer";im.onload=()=>{def.src=f[i];def.ar=im.naturalWidth/im.naturalHeight};im.onerror=()=>{i++;probar()};im.src=f[i]})()}
+function crearEl(def){
+  const d=document.createElement("div");d.className="obj";d.title=def.nombre;
+  if(def.src){const img=new Image();img.alt=def.nombre;img.draggable=false;img.referrerPolicy="no-referrer";img.src=def.src;
+    const ar=def.ar||1,extra=Math.min(1.3,1+Math.max(0,Math.max(ar,1/ar)-1.5)*.25);img.style.transform=`scale(${((def.e||1)*extra).toFixed(2)})`;d.appendChild(img)}
+  else d.innerHTML=`<svg viewBox="0 0 100 100">${ART[def.id]}</svg>`;
+  if(def.mancha){const m=document.createElement("i");m.className="stain";d.appendChild(m)}
+  if(def.tag){const t=document.createElement("b");t.className="etiqueta";t.textContent=def.tag;d.appendChild(t)}
+  return d}
 
 function armarVidas(){const v=$("h-vidas");v.innerHTML="";for(let i=0;i<VIDAS;i++){const s=document.createElement("span");s.innerHTML=ICO.corazon;v.appendChild(s)}}
 function hud(){
@@ -373,7 +397,7 @@ function vidaMenos(){vidas--;racha=0;hud();if(vidas<=0)terminarTurno()}
 function binBajo(px,py){for(let i=0;i<2;i++){const r=binRects[i];if(r&&px>r.left-14&&px<r.right+14&&py>r.top-40&&py<r.bottom+10)return bins[i]}return null}
 function aparecer(){
   const W=innerWidth,def=siguiente(),el=crearEl(def);
-  const o={def,el,x:W*.28+Math.random()*(W*.44-TAM),y:-TAM,drag:false,rot:Math.random()*40-20,vr:(Math.random()<.5?-1:1)*(15+Math.random()*40),ph:Math.random()*6,sw:0};
+  const o={def,el,x:W*.2+Math.random()*(W*.6-TAM),y:-TAM,drag:false,rot:Math.random()*40-20,vr:(Math.random()<.5?-1:1)*(15+Math.random()*40),ph:Math.random()*6,sw:0};
   el.addEventListener("pointerdown",e=>{if(!jugando)return;e.preventDefault();o.drag=true;o.x+=o.sw;o.sw=0;o.dx=e.clientX-o.x;o.dy=e.clientY-o.y;el.classList.add("agarrado");el.setPointerCapture(e.pointerId);pos(o)});
   el.addEventListener("pointermove",e=>{if(!o.drag)return;o.x=Math.max(0,Math.min(innerWidth-TAM,e.clientX-o.dx));o.y=Math.max(-20,Math.min(innerHeight-TAM,e.clientY-o.dy));pos(o);const b=binBajo(e.clientX,e.clientY);bins.forEach(x=>x.el.classList.toggle("abierta",x===b))});
   const soltar=e=>{if(!o.drag)return;o.drag=false;el.classList.remove("agarrado");bins.forEach(x=>x.el.classList.remove("abierta"));const b=binBajo(e.clientX,e.clientY);if(b)clasificar(o,b);else pos(o)};
@@ -385,13 +409,13 @@ function bucle(t){
   const dt=Math.min((t-ultimo)/1000,.05);ultimo=t;tiempo+=dt;hastaSpawn-=dt;
   const H=VH,vel=H*(.14+Math.min(tiempo*.006,.28)),cada=Math.max(1,2-tiempo*.02);
   if(hastaSpawn<=0){aparecer();hastaSpawn=cada}
-  const limite=H*.88-TAM;
+  const limite=H*SUELO-TAM;
   for(const o of objetos.slice()){
     if(o.drag)continue;
     o.y+=vel*dt;o.rot+=o.vr*dt;o.sw=Math.sin(tiempo*2+o.ph)*14;pos(o);
     if(o.y>limite){
       objetos=objetos.filter(x=>x!==o);o.sh.remove();
-      chispas(o.x+TAM/2,H*.88,["#9aa29d","#c9cfcb","#6f7671"],14,90);flotante(o.x+TAM/2,H*.8,"¡Al piso!","#ff6b6b");
+      chispas(o.x+TAM/2,H*SUELO,["#9aa29d","#c9cfcb","#6f7671"],14,90);flotante(o.x+TAM/2,H*(SUELO-.08),"¡Al piso!","#ff6b6b");
       o.el.animate([{opacity:1},{opacity:0}],{duration:250}).onfinish=()=>o.el.remove();
       perdidos++;temblor();rojo();tono(150,.35,"sawtooth");decir(`Se te pasó: ${o.def.nombre}. ${o.def.dato}`,"mal");
       vidaMenos();if(!jugando)return;
